@@ -2,10 +2,15 @@
 define("STRING_FRET", 8);
 define("STRING_PRESS", 6);
 define("STRING_RELEASE", 7);
+require_once("chord.inc.php");
 
  count($argv) == 3 or stop("Usage: php -e $argv[0] <config_script> <score_script>\n");
  $latency = read_config($argv[1]);
  $sheet = file_get_contents($argv[2]) or stop("Error reading $argv[2]\n");
+ // Support chord name.
+ foreach ($chord as $key => $value)
+  $sheet = str_replace("($key)", "($value)", $sheet);
+ //////////////////////
  preg_match_all("/\^?\(((\d\d)+)\)(\d+)/", $sheet, $score, PREG_SET_ORDER);
  $string_map = array();
  $tempo = array("tempo" => 60, "divisions" => 1, "unit" => null);
