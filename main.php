@@ -16,11 +16,18 @@ require_once("chord.inc.php");
  foreach ($chord as $key => $value)
   $sheet = str_replace("($key)", "($value)", $sheet);
  //////////////////////
+ preg_match_all("/(tempo|divisions)=([1-9]\d*)/", $sheet, $header, PREG_SET_ORDER);
  preg_match_all("/\^?\(((\d\d)+)\)(\d+)/", $sheet, $score, PREG_SET_ORDER);
  $chord_brush = array();
  $string_map = array();
  $tempo = array("tempo" => 60, "divisions" => 1, "unit" => null);
  $time_axis = 0; // Counter on the time axis.
+ foreach ($header as $value) {
+  switch ($value[1]) {
+   case "divisions": $tempo["divisions"] = (int)$value[2]; break;
+   case "tempo": $tempo["tempo"] = (int)$value[2]; break;
+  }
+ }
  foreach ($score as $tuple) {
   $brush = array("first" => 0, "last" => 0, "yes" => (substr($tuple[0], 0, 1) == "^"));
   for ($i = 0; $i < strlen($tuple[1]); $i += 2) {
