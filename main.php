@@ -4,7 +4,7 @@ define("STRING_PRESS", 6);
 define("STRING_RELEASE", 7);
 require_once("chord.inc.php");
 
- count($argv) == 3 or stop("Usage: php -e $argv[0] <config_script> <score_script>\n");
+ count($argv) == 3 or stop("Usage: php $argv[0] <config_script> <score_script>\n");
  $latency = read_config($argv[1]);
  $sheet = file_get_contents($argv[2]) or stop("Error reading $argv[2]\n");
  // Support chord name.

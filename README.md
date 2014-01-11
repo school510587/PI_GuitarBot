@@ -16,10 +16,13 @@ the command-line interface of PHP5. It can become available using the command:
 
 , and the command runs this project:
 
-     $ php -e main.php <config_script> <score_script>
+     $ php main.php <config_script> <score_script>
 
 The two scripts will be described in detail. You can choose GuitarBot.ini as
 <config_script> input.
+     The -e option can be placed between php and main.php for debugging. Note
+that it cannot appear after main.php, or it will become an argument sent to
+main.php.
 
 [-] Hardware configuration <config_script>
      This script defines four latency times: move, press, fret and release. One
