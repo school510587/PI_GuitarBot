@@ -17,10 +17,12 @@ require_once("chord.inc.php");
   $sheet = str_replace("($key)", "($value)", $sheet);
  //////////////////////
  preg_match_all("/\^?\(((\d\d)+)\)(\d+)/", $sheet, $score, PREG_SET_ORDER);
+ $chord_brush = array();
  $string_map = array();
  $tempo = array("tempo" => 60, "divisions" => 1, "unit" => null);
  $time_axis = 0; // Counter on the time axis.
  foreach ($score as $tuple) {
+  $brush = array("first" => 0, "last" => 0, "yes" => (substr($tuple[0], 0, 1) == "^"));
   for ($i = 0; $i < strlen($tuple[1]); $i += 2) {
    $string_id = substr($tuple[1], $i, 1);
    $position = substr($tuple[1], $i + 1, 1);
@@ -29,6 +31,17 @@ require_once("chord.inc.php");
    if (array_key_exists($time_axis, $string_map[$string_id]))
     stop("Conflict operation on the same string.\n");
    $string_map[$string_id][$time_axis] = array("position" => $position, "duration" => (int)$tuple[3]);
+   if ($brush["yes"]) {
+    if ($i == 0)
+     $brush["first"] = $string_id;
+    else if(abs($brush["last"] - $string_id) != 1)
+     stop("Discontinuous sequence of string numbers in $tuple[0].\n");
+    $brush["last"] = $string_id;
+   }
+  }
+  if ($brush["yes"]) {
+   $brush["first"] != $brush["last"] or stop("Too few pitches in $tuple[0].\n");
+   $chord_brush[$time_axis] = chr($brush["first"] + 64).chr($brush["last"] + 64);
   }
   $time_axis += $tuple[3];
  }
@@ -52,6 +65,8 @@ require_once("chord.inc.php");
   }
  }
  ksort($command_map);
+ foreach ($chord_brush as $time => $brush)
+  $command_map[$time * $tempo["unit"]] = array($brush);
  reset($command_map);
  $origin = key($command_map);
  foreach($command_map as $time => $command) {
