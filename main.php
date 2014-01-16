@@ -1,4 +1,9 @@
 <?php
+/*
+ * @file main.php
+ * @brief Generate a time-command mapping from config and music scripts.
+ */
+
 define("STRING_FRET", 8);
 define("STRING_PRESS", 6);
 define("STRING_RELEASE", 7);

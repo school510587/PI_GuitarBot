@@ -1,4 +1,9 @@
 <?php
+/*
+ * @file chord.inc.php
+ * @brief Define a name for each special chord pattern.
+ */
+
  $chord = array(
   "Am7"   => "102130425060",
   "Bm/D"  => "212334405060",
