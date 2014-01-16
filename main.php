@@ -10,16 +10,31 @@ define("STRING_RELEASE", 7);
 require_once("chord.inc.php");
 
  count($argv) == 3 or stop("Usage: php $argv[0] <config_script> <score_script>\n");
+
+ // Read two scripts.
  $latency = read_config($argv[1]);
  $sheet = file_get_contents($argv[2]) or stop("Error reading $argv[2]\n");
+
  // Support chord name.
  foreach ($chord as $key => $value)
   $sheet = str_replace("($key)", "($value)", $sheet);
- //////////////////////
+
+ // Fetch "notes" from music script.
  preg_match_all("/\^?\(((\d\d)+)\)(\d+)/", $sheet, $score, PREG_SET_ORDER);
+
+ // $string_map: String status statistics.
+ // $tempo: A 3-member struct for time scaling.
+ // $time_axis: Current time of parsing.
  $string_map = array();
  $tempo = array("tempo" => 60, "divisions" => 1, "unit" => null);
  $time_axis = 0; // Counter on the time axis.
+
+ // Collect operations on each string from each note ($tuple).
+ // Elements in a $tuple:
+ // [0] The full text of a note.
+ // [1] A series of numbers indicating string IDs and finger positions.
+ // [2] Not in use.
+ // [3] Duration of this note in divisions.
  foreach ($score as $tuple) {
   for ($i = 0; $i < strlen($tuple[1]); $i += 2) {
    $string_id = substr($tuple[1], $i, 1);
@@ -32,12 +47,18 @@ require_once("chord.inc.php");
   }
   $time_axis += $tuple[3];
  }
+
+ // Milliseconds of a time unit.
  $tempo["unit"] = (int)round((60000/$tempo["tempo"])/$tempo["divisions"]);
- $command_map = array();
+
+ $command_map = array(); // Array of time-to-command output.
+
+ // For each string, detect the time when a note is picked and add commands for
+ // preparing process.
  foreach ($string_map as $id => $schedule) {
   $string = new guitar_string($id);
-  ksort($schedule);
-  $last_attack = null;
+  ksort($schedule); // Sort schedule by time.
+  $last_attack = null; // The last time of note attack.
   foreach ($schedule as $time => $note) {
    $action = $string->play($note["position"], $latency);
    foreach ($action as $command) {
@@ -51,9 +72,16 @@ require_once("chord.inc.php");
    $last_attack = $time * $tempo["unit"];
   }
  }
+
+ // Sort $command_map by keys. Its keys may be unordered because of successive
+ // insertions of key-unordered pairs.
  ksort($command_map);
+
+ // Get the first key of $command. The output must start from time 0.
  reset($command_map);
  $origin = key($command_map);
+
+ // Output in <time> <command>... format.
  foreach($command_map as $time => $command) {
   echo $time - $origin;
   foreach ($command as $byte)
@@ -61,6 +89,7 @@ require_once("chord.inc.php");
   echo "\n";
  }
 
+// Class of a string for keeping its current status.
 class guitar_string
 {
  private $id = null;
@@ -82,6 +111,8 @@ class guitar_string
   return $this->id.$position;
  }
 
+ // Determine what action to take for playing a note in $position from the
+ // current chord status.
  public function play($position, $latency)
  {
   $result = array();
@@ -126,6 +157,7 @@ class guitar_string
  }
 }
 
+// Get the latency of each operation from a config_script.
 function read_config($source)
 {
  $latency = array();
@@ -174,12 +206,14 @@ function read_config($source)
  return $latency;
 }
 
+// Output error message and exit.
 function stop($msg)
 {
  fprintf(STDERR, $msg);
  exit(1);
 }
 
+// Convert a string into a positive integer.
 function to_positive_int($n, $e)
 {
  preg_match("/^\s*[1-9]\d*\s*$/", $n) or stop($e);
