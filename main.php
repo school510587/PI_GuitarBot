@@ -61,13 +61,39 @@ require_once("chord.inc.php");
   $last_attack = null; // The last time of note attack.
   foreach ($schedule as $time => $note) {
    $action = $string->play($note["position"], $latency);
+   $tmp_cmd = array();
    foreach ($action as $command) {
     $real_time = $time * $tempo["unit"] + $command["time"];
     if ($last_attack !== null && $real_time < $last_attack + $latency["fret"])
      stop("No enough time for playing.\n");
+    $tmp_cmd[$real_time] = $command["code"];
+   }
+   ksort($tmp_cmd);
+   reset($tmp_cmd);
+   $early = null;
+   if ($last_attack === null) {
+    $early = $time * $tempo["unit"] - key($tmp_cmd);
+    if ($early < 1000)
+     $early = 1000 - $early;
+    else
+     $early = 0;
+   }
+   else
+    $early = (key($tmp_cmd) - ($last_attack + $latency["fret"])) >> 1;
+   if ($early > 0) {
+    $new_keys = array();
+    foreach ($tmp_cmd as $k => $v) {
+     if ($k < $time * $tempo["unit"])
+      array_push($new_keys, $k - $early);
+     else
+      array_push($new_keys, $k);
+    }
+    $tmp_cmd = array_combine($new_keys, array_values($tmp_cmd));
+   }
+   foreach ($tmp_cmd as $real_time => $code) {
     if (!array_key_exists($real_time, $command_map))
      $command_map[$real_time] = array();
-    array_push($command_map[$real_time], $command["code"]);
+    array_push($command_map[$real_time], $code);
    }
    $last_attack = $time * $tempo["unit"];
   }
