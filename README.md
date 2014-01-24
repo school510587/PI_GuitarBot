@@ -77,3 +77,26 @@ strummed for a 4-unit-duration note. Note that these names are case-sensitive.
      F
      G
      G/B
+
+[-] Output GuitarBot commands
+     This program generates a textual file containing GuitarBot commands. There
+is one line for each command in following format:
+
+     <time> (( <string><action>)+ | <strumming>)
+
+     <time> is a nonnegative integer in milliseconds. <string> is the ID of the
+target string (0~15), and its value must be less than number of strings of a
+guitar (6 in general case). <action> can be classified into the following cases.
+Note that both <string> and <action> are in hexadecimal format.
+
+     Table 3: Action on a string
+     0  	Open string (no action)
+     1~4	Move the motor onto this position
+     6  	Press the string
+     7  	Release the string
+     8  	Pick the string
+
+     <strumming> consists of two alphabets, indicating the first and the last
+string of strumming. The first string is A, the second string is B, and so on.
+For example, AF is a strumming going through the first to the sixth string. FA
+is a strumming of the same strings in reverse order.
