@@ -61,3 +61,19 @@ front of such note. Strings are fretted successively either in up-to-down or
 down-to-up order, according to direction of the arrow beside the note on printed
 score. To support this skill, the script requires that playing commands of such
 notes should be ordered (either direction) by string numbars.
+     To support harmony notations, you can specify one of the following values
+replacing string-position notations. E.G. ^(C)4 indicates that an Am7 harmony is
+strummed for a 4-unit-duration note. Note that these names are case-sensitive.
+
+     Table 2: Harmony notations
+     Am7
+     Bm/D
+     C
+     Csus4
+     D
+     Dsus4
+     Eb
+     Em
+     F
+     G
+     G/B
